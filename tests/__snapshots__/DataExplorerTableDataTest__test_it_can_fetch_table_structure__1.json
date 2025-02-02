@@ -1,0 +1,96 @@
+{
+    "columns": [
+        "name",
+        "type_name",
+        "type",
+        "collation",
+        "nullable",
+        "default",
+        "auto_increment",
+        "comment",
+        "generation"
+    ],
+    "rows": [
+        [
+            "id",
+            "integer",
+            "integer",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "Yes",
+            "<NULL>",
+            "<NULL>"
+        ],
+        [
+            "name",
+            "varchar",
+            "varchar",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "<NULL>"
+        ],
+        [
+            "email",
+            "varchar",
+            "varchar",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "<NULL>"
+        ],
+        [
+            "email_verified_at",
+            "datetime",
+            "datetime",
+            "<NULL>",
+            "Yes",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "<NULL>"
+        ],
+        [
+            "password",
+            "varchar",
+            "varchar",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "<NULL>"
+        ],
+        [
+            "created_at",
+            "datetime",
+            "datetime",
+            "<NULL>",
+            "Yes",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "<NULL>"
+        ],
+        [
+            "updated_at",
+            "datetime",
+            "datetime",
+            "<NULL>",
+            "Yes",
+            "<NULL>",
+            "No",
+            "<NULL>",
+            "<NULL>"
+        ]
+    ],
+    "name": null,
+    "total": null,
+    "page": null,
+    "last_page": null
+}

@@ -1,0 +1,26 @@
+{
+    "columns": [
+        "id",
+        "name",
+        "email",
+        "email_verified_at",
+        "password",
+        "created_at",
+        "updated_at"
+    ],
+    "rows": [
+        [
+            1,
+            "Test",
+            "test@test.at",
+            null,
+            "",
+            null,
+            null
+        ]
+    ],
+    "name": "users",
+    "total": 1,
+    "page": 1,
+    "last_page": 1
+}
