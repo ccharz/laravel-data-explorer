@@ -30,7 +30,7 @@ class DataExplorer extends Prompt
 
     public static function version(): string
     {
-        return '0.0.1';
+        return '0.0.2';
     }
 
     public function __construct(private readonly ?string $connection = null)
@@ -269,7 +269,7 @@ class DataExplorer extends Prompt
             case DataExplorerWindowElement::RESULT:
                 $this->windowState->selected_result_row = min(
                     count($this->windowState->currentTable->rows) - 1,
-                    $this->windowState->selected_result_row + $this->page_height
+                    $this->windowState->selected_result_row + ($this->page_height - 2)
                 );
                 break;
         }
@@ -287,7 +287,7 @@ class DataExplorer extends Prompt
             case DataExplorerWindowElement::RESULT:
                 $this->windowState->selected_result_row = max(
                     0,
-                    $this->windowState->selected_result_row - $this->page_height
+                    $this->windowState->selected_result_row - ($this->page_height - 2)
                 );
 
                 break;
@@ -347,7 +347,7 @@ class DataExplorer extends Prompt
         $this->windowState->currentTable = DataExplorerTableData::fromTable(
             $this->windowState->table_selection_tables[$index],
             $this->connection,
-            $this->page_height,
+            $this->page_height - 2,
             max(1, $page ?? 1)
         );
         $this->windowState->is_loading_result = false;
