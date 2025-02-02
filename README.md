@@ -3,6 +3,12 @@
 > [!WARNING]  
 > This is still beta software - use with caution.
 
+## About
+
+This package provides a terminal user interface to explore the tables of your database.
+
+![data_explorer](https://github.com/user-attachments/assets/d93ccfaa-8704-4929-9f71-627f302819ef)
+
 ## Installation
 
 ```bash
