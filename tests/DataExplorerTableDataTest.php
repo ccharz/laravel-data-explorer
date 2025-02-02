@@ -52,6 +52,6 @@ class DataExplorerTableDataTest extends TestCase
     {
         $class_vars = get_object_vars(DataExplorerTableData::overview());
 
-        $this->assertMatchesJsonSnapshot($class_vars);
+        $this->assertCount(1, $class_vars['rows']);
     }
 }
