@@ -1,7 +1,7 @@
 # Laravel Data Explorer
 
 > [!WARNING]  
-> This is still beta software. Use with caution.
+> This is still beta software - use with caution.
 
 ## Installation
 
@@ -23,12 +23,13 @@ php artisan data-explorer --connection=sqlite
 
 ## ToDo
 
-- Real Data Fetching
-  - Go To Foreign
-  - Sort by column
-  - Show full table values in sidebar
-  - Pagination
-  - Show indices
+- Jump To Foreign Key Target
+- Sort by column
+- Show full table values in sidebar
+- Filter data
+- Show indices
+- Show sql errors
+- Paginate manual sql
 
 ## License
 
