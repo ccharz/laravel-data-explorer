@@ -3,6 +3,10 @@
 > [!WARNING]  
 > This is still beta software - use with caution.
 
+## About
+
+This package provides a terminal user interface to explore the tables of your database.
+
 ## Installation
 
 ```bash
