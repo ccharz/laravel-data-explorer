@@ -8,17 +8,19 @@ use Ccharz\DataExplorer\DataExplorerTableData;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Override;
 use Spatie\Snapshots\MatchesSnapshots;
 
 class DataExplorerTableDataTest extends TestCase
 {
     use MatchesSnapshots;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
 
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table): void {
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('email')->unique();

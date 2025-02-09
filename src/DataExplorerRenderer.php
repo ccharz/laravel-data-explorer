@@ -111,6 +111,7 @@ class DataExplorerRenderer extends Renderer
         $windowState = $this->dataExplorer->windowState;
 
         $title = match (true) {
+            $windowState->currentTable?->name !== null => $windowState->currentTable->name,
             $windowState->table_selection_index > -1 => $windowState->table_selection_tables[$windowState->table_selection_index] ?? '',
             default => 'Table Overview'
         };
@@ -128,7 +129,9 @@ class DataExplorerRenderer extends Renderer
             current_line: $windowState->selected_result_row,
             title: $title,
             footer: '',
-            fixed_rows: 2,
+            fixed_rows: $windowState->currentTable instanceof DataExplorerTableData && $windowState->currentTable->error === null
+                ? 2
+                : 0,
             border_color: $color,
         );
 
@@ -186,11 +189,20 @@ class DataExplorerRenderer extends Renderer
     {
         $table = $windowState->currentTable;
 
+        if ($table->error) {
+
+            return array_map(
+                fn (string $line): string => $this->red($line),
+                explode("\n", $this->mbWordwrap($table->error, $width))
+            );
+        }
+
         /* Calculate Maximum Column Width */
         $column_widths = [];
 
         foreach ($table->columns as $column_index => $column) {
-            $current_column_width = mb_strwidth($column);
+            $current_column_width = mb_strwidth($column) + ($table->order_by === $column || $table->order_by === '-'.$column ? 2 : 0);
+
             $column_widths[$column_index] = min(30, max($column_widths[$column_index] ?? 0, $current_column_width));
         }
 
@@ -203,7 +215,12 @@ class DataExplorerRenderer extends Renderer
 
         /** Draw Header */
         $lines = [
-            $this->pad(implode('│ ', Arr::map($table->columns, fn (string $column, int $column_index): string => $this->pad($column, $column_widths[$column_index] + 1))).'│', $width, ' '),
+            $this->pad(implode('│ ', Arr::map($table->columns, fn (string $column, int $column_index): string => $this->pad(
+                match (true) {
+                    $table->order_by === $column => '↓ '.$column,
+                    $table->order_by === '-'.$column => '↑ '.$column,
+                    default => $column
+                }, $column_widths[$column_index] + 1))).'│', $width, ' '),
             $this->pad(implode('┼─', Arr::map($table->columns, fn (string $column, int $column_index): string => $this->pad('', $column_widths[$column_index] + 1, '─'))).'┼', $width, '─'),
         ];
 
@@ -241,7 +258,7 @@ class DataExplorerRenderer extends Renderer
                 )
             ) {
                 $selection_start = $column_offset - $line_offset;
-                $selection_width = $column_widths[$windowState->selected_result_column];
+                $selection_width = $column_widths[$windowState->selected_result_column] ?? 0;
                 $line = ($selection_start > 0 ? mb_substr($line, 0, $selection_start) : '')
                     .$this->inverse(mb_substr($line, $selection_start, $selection_width))
                     .mb_substr($line, $selection_start + $selection_width);
@@ -261,13 +278,24 @@ class DataExplorerRenderer extends Renderer
             'q' => 'Quit',
             '<TAB>' => 'Toggle Focus',
             's' => 'SQL',
-            'j' => 'Select Table',
-            ...($this->dataExplorer->windowState->table_selection_index >= 0 && $this->dataExplorer->windowState->currentTable !== null
-                ? ['t' => $this->dataExplorer->windowState->currentTable->total !== null
-                    ? 'Show Structure'
-                    : 'Show Data',
-                ]
-                : []
+            ...($this->dataExplorer->windowState->focus === DataExplorerWindowElement::TABLE_SELECTION
+                ? [
+                    'j' => 'Jump to table',
+
+                ] : []
+            ),
+            ...(
+                $this->dataExplorer->windowState->focus === DataExplorerWindowElement::RESULT
+                && $this->dataExplorer->windowState->table_selection_index >= 0 && $this->dataExplorer->windowState->currentTable instanceof DataExplorerTableData
+            ? ['t' => $this->dataExplorer->windowState->currentTable->total !== null
+                ? 'Show Structure'
+                : 'Show Data',
+                'o' => $this->dataExplorer->windowState->currentTable->order_by === ($this->dataExplorer->windowState->currentTable->columns[$this->dataExplorer->windowState->selected_result_column] ?? null)
+                    ? 'Order DESC'
+                    : 'Order ASC',
+                // 'f' => 'Filter',
+            ]
+            : []
             ),
             ...($this->dataExplorer->windowState->currentTable->last_page !== null && $this->dataExplorer->windowState->currentTable->last_page > 1
             ? [
@@ -282,7 +310,7 @@ class DataExplorerRenderer extends Renderer
         ];
 
         return '  '.collect($hotkeys)
-            ->map(fn (string $description, string $key): string => is_numeric($key)
+            ->map(fn (string $description, string|int $key): string => is_numeric($key)
                 ? $this->bold('   '.$description)
                 : $this->dim($key).' '.$description
             )

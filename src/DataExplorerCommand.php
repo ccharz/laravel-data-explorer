@@ -25,6 +25,10 @@ class DataExplorerCommand extends Command
      */
     public function handle(): void
     {
-        (new DataExplorer($this->option('connection')))->prompt();
+        $connection = is_string($this->option('connection')) && $this->option('connection') !== ''
+            ? $this->option('connection')
+            : null;
+
+        (new DataExplorer($connection))->prompt();
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ccharz\DataExplorer;
 
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -20,6 +21,8 @@ readonly class DataExplorerTableData
         public ?int $total = null,
         public ?int $page = null,
         public ?int $last_page = null,
+        public ?string $order_by = null,
+        public ?string $error = null,
     ) {}
 
     public static function valueToString(mixed $value): string
@@ -41,9 +44,13 @@ readonly class DataExplorerTableData
         $rows = [];
 
         foreach ($tableColumns as $column) {
-            $columns = array_keys($column);
+            $columns = array_map(
+                fn (int|string $value): string => (string) $value,
+                array_keys($column)
+            );
+
             $rows[] = array_map(
-                fn (mixed $value) => self::valueToString($value),
+                fn (mixed $value): string => self::valueToString($value),
                 array_values($column)
             );
         }
@@ -58,6 +65,7 @@ readonly class DataExplorerTableData
     {
         $columns = [];
         $rows = [];
+        $error = null;
 
         try {
             $tableRows = DB::connection($connection)
@@ -69,21 +77,26 @@ readonly class DataExplorerTableData
                 $columns = array_keys($values);
                 $rows[] = array_values($values);
             }
-        } catch (Throwable) {
-
+        } catch (Throwable $throwable) {
+            $error = $throwable->getMessage();
         }
 
         return new self(
             $columns,
             $rows,
-
+            'SQL',
+            error: $error
         );
     }
 
-    public static function fromTable(string $name, ?string $connection = null, ?int $per_page = null, ?int $page = null): self
+    public static function fromTable(string $name, ?string $connection = null, ?int $per_page = null, ?int $page = null, ?string $order_by = null): self
     {
         $tableRows = DB::connection($connection)
             ->table($name)
+            ->when($order_by !== null, fn (Builder $query) => str_starts_with((string) $order_by, '-')
+                 ? $query->orderByDesc(substr((string) $order_by, 1))
+                 : $query->orderBy($order_by)
+            )
             ->paginate(
                 perPage: $per_page ?? 15,
                 page: $page ?? 1
@@ -111,7 +124,8 @@ readonly class DataExplorerTableData
             $name,
             $tableRows->total(),
             $tableRows->currentPage(),
-            $tableRows->lastPage()
+            $tableRows->lastPage(),
+            $order_by
         );
     }
 
@@ -124,9 +138,13 @@ readonly class DataExplorerTableData
         $rows = [];
 
         foreach ($tables as $table) {
-            $columns = array_keys($table);
+            $columns = array_map(
+                fn (int|string $value): string => (string) $value,
+                array_keys($table)
+            );
+
             $rows[] = array_map(
-                fn (mixed $value) => self::valueToString($value),
+                fn (mixed $value): string => self::valueToString($value),
                 array_values($table)
             );
         }

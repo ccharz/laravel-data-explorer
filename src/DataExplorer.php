@@ -102,6 +102,7 @@ class DataExplorer extends Prompt
 
             ->on('j', fn () => $this->showPopup(DataExplorerWindowElement::TABLE_SELECTION_POPUP))
             ->on('s', fn () => $this->showPopup(DataExplorerWindowElement::SQL_INPUT_POPUP))
+            ->on('o', fn () => $this->orderByColumn())
             ->on('t', fn () => $this->toggleTableData())
             ->listen();
 
@@ -307,7 +308,7 @@ class DataExplorer extends Prompt
     private function toggleTableData(): void
     {
         if ($this->windowState->table_selection_index === -1
-            || $this->windowState->currentTable === null
+            || ! $this->windowState->currentTable instanceof DataExplorerTableData
         ) {
             return;
         }
@@ -326,7 +327,7 @@ class DataExplorer extends Prompt
         }
     }
 
-    private function loadTable(int|string $index, ?int $page = null): void
+    private function loadTable(int|string $index, ?int $page = null, ?string $order_by_column = null): void
     {
         $index = is_string($index) ? array_search($index, $this->windowState->table_selection_tables) : $index;
 
@@ -343,19 +344,46 @@ class DataExplorer extends Prompt
         $this->windowState->is_loading_result = true;
         $this->windowState->table_selection_index = $index;
         $this->windowState->selected_result_row = -1;
-        $this->windowState->selected_result_column = 0;
+
+        if ($this->windowState->currentTable?->name !== $this->windowState->table_selection_tables[$index]) {
+            $this->windowState->selected_result_column = 0;
+        } elseif ($this->windowState->currentTable instanceof DataExplorerTableData) {
+            $order_by_column ??= $this->windowState->currentTable->order_by;
+        }
+
         $this->windowState->currentTable = DataExplorerTableData::fromTable(
             $this->windowState->table_selection_tables[$index],
             $this->connection,
             $this->page_height - 2,
-            max(1, $page ?? 1)
+            max(1, $page ?? 1),
+            $order_by_column
         );
         $this->windowState->is_loading_result = false;
     }
 
-    private function pagination(string $direction)
+    private function orderByColumn(): void
     {
-        if ($this->windowState->currentTable === null
+        if (! $this->windowState->currentTable instanceof DataExplorerTableData
+            || $this->windowState->currentTable->page === null
+            || ! isset($this->windowState->currentTable->columns[$this->windowState->selected_result_column])
+        ) {
+            return;
+        }
+
+        $order_by_column = $this->windowState->currentTable->columns[$this->windowState->selected_result_column];
+
+        $this->loadTable(
+            $this->windowState->table_selection_index,
+            page: null,
+            order_by_column: $this->windowState->currentTable->order_by !== $order_by_column
+                ? $order_by_column
+                : '-'.$order_by_column,
+        );
+    }
+
+    private function pagination(string $direction): void
+    {
+        if (! $this->windowState->currentTable instanceof DataExplorerTableData
             || $this->windowState->currentTable->page === null
         ) {
             return;

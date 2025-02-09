@@ -30,12 +30,11 @@ php artisan data-explorer --connection=sqlite
 ## ToDo
 
 - Jump To Foreign Key Target
-- Sort by column
 - Show full table values in sidebar
 - Filter data
 - Show indices
-- Show sql errors
 - Paginate manual sql
+- Re-Render on resize
 
 ## License
 
