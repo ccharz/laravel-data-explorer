@@ -21,13 +21,13 @@
     },
     "require": {
         "php": "^8.3",
-        "ext-pcntl": "*",
-        "laravel/prompts": "^0.3.3",
-        "joetannenbaum/chewie": "^0.1.11"
+        "laravel/prompts": "^0.3",
+        "joetannenbaum/chewie": "^0.1",
+        "illuminate/support": "^11.0||^12.0"
     },
     "require-dev": {
         "laravel/pint": "^1.20",
-        "orchestra/testbench": "^9.9",
+        "orchestra/testbench": "^9.0||^10.0",
         "rector/rector": "^2.0",
         "larastan/larastan": "^3.0",
         "spatie/phpunit-snapshot-assertions": "^5.1"
@@ -38,5 +38,7 @@
                 "Ccharz\\DataExplorer\\DataExplorerServiceProvider"
             ]
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
