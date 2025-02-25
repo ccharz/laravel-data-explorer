@@ -32,14 +32,28 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Fix code styling [ci skip]"
+
   tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      COMPOSER_NO_INTERACTION: 1
+
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.3, 8.4]
+        laravel: [11, 12]
+
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
+
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: ${{ matrix.php }}
           extensions: json, dom, curl, libxml, mbstring
+          tools: composer:v2
           coverage: none
 
       - name: Checkout code
@@ -52,11 +66,15 @@ jobs:
         uses: actions/cache@v3
         with:
           path: vendor
-          key: ${{ runner.os }}-vendor-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-${{ matrix.php }}-${{ matrix.laravel }}-vendor-${{ hashFiles('**/composer.lock') }}
 
       - name: Install Dependencies
         if: steps.cache-vendor.outputs.cache-hit != 'true' # Skip if cache hit
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: |
+          composer require "illuminate/contracts=^${{ matrix.laravel }}" --dev --no-update
+          composer remove "larastan/larastan" --dev --no-update
+          composer remove "rector/rector" --dev --no-update
+          composer update -q --no-ansi --prefer-dist --no-interaction --no-progress --no-scripts
 
-      - name: PHPUnit
+      - name: Execute tests
         run: vendor/bin/phpunit
