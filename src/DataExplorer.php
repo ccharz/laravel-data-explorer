@@ -30,7 +30,7 @@ class DataExplorer extends Prompt
 
     public static function version(): string
     {
-        return '0.0.3';
+        return '0.1.1';
     }
 
     public function __construct(private readonly ?string $connection = null)
